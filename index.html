@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>백도진(@baek.dojin)</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/variable/pretendardvariable.css" />
+    <style>
+        :root { --ig-bg: #fff; --ig-text: #000; --ig-gray: #dbdbdb; --ig-light-gray: #efefef; --ig-blue: #0095f6; --ig-link: #00376b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard Variable', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #fafafa; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; color: var(--ig-text); }
+        .app-container { background-color: var(--ig-bg); width: 100%; max-width: 430px; min-height: 100vh; border-left: 1px solid var(--ig-gray); border-right: 1px solid var(--ig-gray); position: relative; padding-bottom: 50px; }
+
+        /* DM 알림 */
+        .dm-notification { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(255,255,255,0.98); border-radius: 15px; padding: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 9999; animation: slideDown 6s ease-in-out forwards; border: 1px solid #efefef; }
+        @keyframes slideDown { 0% { top: -100px; } 10% { top: 20px; } 90% { top: 20px; opacity: 1; } 100% { top: -100px; opacity: 0; } }
+        .dm-icon { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .dm-user { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+        .dm-text { font-size: 14px; color: #333; }
+
+        .header { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; background: var(--ig-bg); z-index: 10; border-bottom: 0.5px solid var(--ig-gray); }
+        .header-left { display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .header-left svg { width: 12px; height: 12px; }
+        .header-right { display: flex; gap: 20px; }
+        .icon-btn { cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn svg { width: 24px; height: 24px; }
+
+        .profile { padding: 12px 16px; }
+        .profile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .avatar-wrapper { position: relative; width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(45deg, #a8c0ff 0%, #7b8ee8 50%, #5c6bc0 100%); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .avatar-inner { width: 78px; height: 78px; border-radius: 50%; border: 3px solid var(--ig-bg); overflow: hidden; background: #e8e8e8; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+        .stats { display: flex; gap: 24px; text-align: center; flex: 1; justify-content: center; margin-left: 20px; }
+        .stat-box { display: flex; flex-direction: column; cursor: pointer; }
+        .stat-box b { font-size: 16px; font-weight: 700; }
+        .stat-box span { font-size: 13px; }
+
+        .bio { font-size: 14px; line-height: 1.4; display: flex; flex-direction: column; gap: 2px; margin-bottom: 15px; }
+        .bio-name { font-weight: 700; }
+        .bio-location { color: var(--ig-link); font-size: 13px; font-weight: 500; }
+        .bio-desc { white-space: pre-wrap; }
+        .bio-link-wrap { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+        .bio-link-wrap svg { width: 12px; height: 12px; fill: var(--ig-link); }
+        .bio-link { color: var(--ig-link); text-decoration: none; font-weight: 600; font-size: 14px; }
+
+        /* BGM 위젯 */
+        .bgm-widget { margin: 0 16px 12px; background: #fafafa; border: 1px solid var(--ig-gray); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; }
+        .music-bars { display: flex; gap: 2px; height: 12px; align-items: flex-end; }
+        .bar { width: 3px; background: var(--ig-text); animation: bounce 1s infinite alternate; }
+        .bar:nth-child(2) { animation-delay: 0.2s; } .bar:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0% { height: 3px; } 100% { height: 12px; } }
+        .bgm-paused .bar { animation: none; height: 3px; }
+        .bgm-play-btn { background: #5c6bc0; border: none; color: #fff; font-family: 'Pretendard Variable', sans-serif; font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+
+        /* BGM 팝업 */
+        .bgm-popup { display: none; position: fixed; bottom: 20px; right: 16px; z-index: 9999; background: #1a1a2e; border: 2px solid #5c6bc0; border-radius: 8px; width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); }
+        .bgm-popup-header { background: #5c6bc0; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px 6px 0 0; cursor: grab; user-select: none; }
+        .bgm-popup-header span { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.05em; }
+        .bgm-popup-header div { display: flex; gap: 6px; }
+        .bgm-popup-header button { background: none; border: none; color: #fff; font-size: 14px; cursor: pointer; padding: 0 4px; line-height: 1; }
+        .bgm-popup-body { padding: 10px; }
+        .bgm-popup-body iframe { width: 100%; border-radius: 4px; }
+
+        .action-buttons { padding: 0 16px 16px; display: flex; gap: 6px; }
+        .btn { flex: 1; background: var(--ig-light-gray); border-radius: 8px; padding: 7px 16px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border: none; color: var(--ig-text); transition: 0.2s; }
+        .btn-blue { background: var(--ig-blue); color: white; }
+
+        .highlights { display: flex; gap: 15px; padding: 0 16px 20px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ig-light-gray); }
+        .highlights::-webkit-scrollbar { display: none; }
+        .highlight-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; cursor: pointer; width: 62px; }
+        .h-circle { width: 62px; height: 62px; border-radius: 50%; border: 1px solid var(--ig-gray); display: flex; align-items: center; justify-content: center; font-size: 24px; padding: 3px; background: transparent; }
+        .h-inner { width: 100%; height: 100%; border-radius: 50%; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--ig-bg); }
+        .highlight-text { font-size: 11px; font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; text-align: center; color: #262626; }
+
+        .feed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding-bottom: 20px; margin-top: 15px; }
+        .grid-item { position: relative; width: 100%; aspect-ratio: 1 / 1; background: var(--ig-light-gray); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .grid-item img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; height: 48px; background: var(--ig-bg); border-top: 0.5px solid var(--ig-gray); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { cursor: pointer; padding: 10px; }
+        .nav-item svg { width: 24px; height: 24px; fill: var(--ig-text); }
+        .nav-profile { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; border: 1px solid var(--ig-gray); background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+
+        /* 모달 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--ig-bg); z-index: 200; justify-content: center; }
+        .modal-content { width: 100%; max-width: 430px; height: 100%; overflow-y: auto; background: var(--ig-bg); display: flex; flex-direction: column; position: relative; padding-bottom: 60px; }
+        .post-header { display: flex; align-items: center; padding: 10px 14px; border-bottom: 0.5px solid var(--ig-light-gray); position: sticky; top: 0; background: var(--ig-bg); z-index: 10; }
+        .back-btn { margin-right: 16px; cursor: pointer; display: flex; }
+        .post-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 10px; border: 1px solid var(--ig-light-gray); background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .post-user-info { display: flex; flex-direction: column; justify-content: center; }
+        .post-username { font-weight: 600; font-size: 14px; }
+        .post-location { font-size: 12px; color: var(--ig-link); }
+
+        .post-img-container { width: 100%; aspect-ratio: 1/1; position: relative; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; font-size: 64px; }
+        .post-img-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .zoom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
+        .zoom-overlay img { max-width: 100vw; max-height: 100vh; object-fit: contain; }
+
+        .pop-heart { position: absolute; width: 100px; height: 100px; fill: white; opacity: 0; transform: scale(0); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); pointer-events: none; z-index: 5; }
+        @keyframes heartPop { 0% { transform: scale(0); opacity: 0; } 15% { transform: scale(1.2); opacity: 1; } 30% { transform: scale(1); opacity: 1; } 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0; } }
+        .animate-heart { animation: heartPop 1s ease-out forwards; }
+
+        .post-actions { padding: 12px 14px; display: flex; align-items: center; gap: 16px; }
+        .post-actions svg { width: 24px; height: 24px; cursor: pointer; fill: transparent; stroke: var(--ig-text); stroke-width: 2; transition: 0.2s; }
+        .action-right { margin-left: auto; }
+        .liked-heart { fill: #ed4956 !important; stroke: #ed4956 !important; }
+        .saved-mark { fill: var(--ig-text) !important; }
+
+        .post-likes { padding: 0 14px; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+        .post-caption { padding: 0 14px; font-size: 14px; line-height: 1.5; margin-bottom: 6px; }
+        .post-caption b { font-weight: 600; margin-right: 4px; }
+        .post-time { padding: 0 14px 12px; font-size: 11px; color: #8e8e8e; border-bottom: 0.5px solid var(--ig-light-gray); }
+
+        .comments-wrap { padding: 12px 14px; display: flex; flex-direction: column; gap: 16px; }
+        .comment-row { display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .c-avatar { width: 32px; height: 32px; border-radius: 50%; background: #eee; flex-shrink: 0; overflow: hidden; }
+        .c-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .c-content { font-size: 14px; line-height: 1.4; flex: 1; }
+        .c-content b { font-weight: 600; margin-right: 4px; }
+
+        .comment-input-area { position: fixed; bottom: 0; width: 100%; max-width: 430px; height: 60px; background: var(--ig-bg); border-top: 0.5px solid var(--ig-gray); display: flex; align-items: center; padding: 0 16px; gap: 12px; z-index: 20; }
+        .my-c-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .comment-input-box { flex: 1; display: flex; align-items: center; }
+        .comment-input-box input { width: 100%; border: none; outline: none; font-size: 14px; background: transparent; }
+        .comment-submit { color: var(--ig-blue); font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: transparent; padding: 5px; opacity: 0.5; }
+        .comment-submit.active { opacity: 1; }
+
+        /* 스토리 모달 */
+        .story-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 300; justify-content: center; }
+        .story-content { width: 100%; max-width: 430px; height: 100%; position: relative; background: #1a1a1a; display: flex; flex-direction: column; }
+        .story-progress { position: absolute; top: 10px; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,0.3); border-radius: 2px; z-index: 10; display: flex; gap: 4px; }
+        .s-bar { flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px; height: 100%; }
+        .s-bar.active { background: #fff; }
+        .story-header { position: absolute; top: 20px; left: 10px; right: 10px; display: flex; align-items: center; justify-content: space-between; z-index: 10; color: white; }
+        .sh-user { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+        .sh-user .sh-avatar { width: 32px; height: 32px; border-radius: 50%; background: #5c6bc0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .sh-close { cursor: pointer; font-size: 24px; padding: 0 5px; }
+
+        .story-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: #1e1e2e; position: relative; }
+        .yajak-box { background: #252535; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); width: 85%; text-align: center; border: 1px solid rgba(92,107,192,0.3); }
+        .yajak-top { font-weight: 800; font-size: 13px; color: #a0aee8; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(92,107,192,0.3); letter-spacing: 0.05em; }
+        .yajak-date { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 10px; font-family: monospace; }
+        .yajak-q { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 16px; line-height: 1.5; }
+        .yajak-a { font-size: 15px; font-weight: 600; color: #c5cff5; line-height: 1.6; }
+        .story-nav { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 5; }
+        .story-prev { left: 0; } .story-next { right: 0; }
+    </style>
+</head>
+<body>
+
+<div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
+    <img id="zoomedImg" src="">
+</div>
+
+<div class="dm-notification">
+    <div class="dm-icon"><img src="https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%94%84%EC%82%AC.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+    <div class="dm-content">
+        <div class="dm-user">baek.dojin</div>
+        <div class="dm-text">야작할 사람. 재료는 있음.</div>
+    </div>
+</div>
+
+<div class="app-container">
+
+    <header class="header">
+        <div class="header-left">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+            baek.dojin
+            <svg viewBox="0 0 24 24" style="margin-top:2px;"><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+        <div class="header-right">
+            <div class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <div class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+            <div class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+        </div>
+    </header>
+
+    <section class="profile">
+        <div class="profile-top">
+            <div class="avatar-wrapper" onclick="openStory()">
+                <div class="avatar-inner">
+                    <img src="https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%94%84%EC%82%AC.jpg">
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-box"><b>7</b><span>게시물</span></div>
+                <div class="stat-box"><b>1.2k</b><span>팔로워</span></div>
+                <div class="stat-box"><b>3</b><span>팔로잉</span></div>
+            </div>
+        </div>
+        <div class="bio">
+            <div class="bio-name">백도진 (S대 조소과 03학번)</div>
+            <div class="bio-location">📍 서울 서대문구 S대학교 미술대학</div>
+            <div class="bio-desc">끌 > 사람
+작업실에 삽니다. (항상)
+야작할 사람 구함. 재료는 있음.</div>
+            <a href="CHATBOT_LINK_HERE" target="_blank" class="bio-link-wrap">
+                <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span class="bio-link">같이 야작할 사람 (DM)</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- BGM 위젯 -->
+    <div style="background:#fafafa; border-bottom: 1px solid var(--ig-gray); padding: 7px 12px; display: flex; align-items: center; gap: 10px; margin: 0 0 0 0;">
+        <div class="music-bars bgm-paused" id="bgmBars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+        <span style="font-size: 13px; font-weight: 500; flex: 1; color: #555;" id="bgmText">턴테이블 플리</span>
+        <button class="bgm-play-btn" onclick="openBGM()">▶ 재생</button>
+    </div>
+
+    <!-- BGM 팝업 -->
+    <div class="bgm-popup" id="bgm-popup">
+        <div class="bgm-popup-header" id="bgm-header">
+            <span>🎵 야작 플리</span>
+            <div>
+                <button onclick="minimizeBGM()" title="최소화">—</button>
+                <button onclick="closeBGM()" title="닫기">✕</button>
+            </div>
+        </div>
+        <div class="bgm-popup-body" id="bgm-body">
+            <div id="bgm-player"></div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-blue" id="followBtn" onclick="toggleFollow()">팔로우</button>
+        <button class="btn" onclick="window.open('CHATBOT_LINK_HERE')">메세지</button>
+        <button class="btn">연락처</button>
+    </div>
+
+    <div class="highlights">
+        <div class="highlight-item" onclick="openStory()">
+            <div class="h-circle" style="border: 1px solid #7b8ee8;">
+                <div class="h-inner">🌙</div>
+            </div>
+            <div class="highlight-text">야작일지</div>
+        </div>
+        <div class="highlight-item">
+            <div class="h-circle"><div class="h-inner">📢</div></div>
+            <div class="highlight-text">공지</div>
+        </div>
+        <div class="highlight-item">
+            <div class="h-circle"><div class="h-inner">🐱</div></div>
+            <div class="highlight-text">과방냥이</div>
+        </div>
+        <div class="highlight-item">
+            <div class="h-circle"><div class="h-inner">🎵</div></div>
+            <div class="highlight-text">플리</div>
+        </div>
+        <div class="highlight-item">
+            <div class="h-circle"><div class="h-inner">🗿</div></div>
+            <div class="highlight-text">작업</div>
+        </div>
+    </div>
+
+    <div class="feed-grid" id="feedGrid"></div>
+
+    <div class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2" ry="2"/><polygon points="10 8 10 16 16 12 10 8"/></svg></div>
+        <div class="nav-item"><div class="nav-profile"><img src="https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%94%84%EC%82%AC.jpg" style="width:100%;height:100%;object-fit:cover;"></div></div>
+    </div>
+</div>
+
+<!-- 게시물 모달 -->
+<div class="modal" id="postModal">
+    <div class="modal-content">
+        <div class="post-header">
+            <div class="back-btn" onclick="closeModal()"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
+            <div style="flex:1; text-align:center; font-weight:600; font-size:16px;">게시물</div>
+            <div style="width:24px;"></div>
+        </div>
+        <div class="post-header" style="border-bottom:none;">
+            <div class="post-avatar"><img src="https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%94%84%EC%82%AC.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+            <div class="post-user-info">
+                <span class="post-username">baek.dojin</span>
+                <span class="post-location" id="modalLocation"></span>
+            </div>
+        </div>
+        <div class="post-img-container" id="modalImg" ondblclick="triggerHeart(); openZoom()"></div>
+        <div class="post-actions">
+            <svg id="actionHeart" viewBox="0 0 24 24" onclick="toggleLike()" style="cursor:pointer"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <svg class="action-right" id="actionBookmark" viewBox="0 0 24 24" onclick="toggleBookmark(this)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="post-likes" id="modalLikes"></div>
+        <div class="post-caption" id="modalCaption"></div>
+        <div class="post-time" id="modalTime"></div>
+        <div class="comments-wrap" id="modalComments"></div>
+    </div>
+    <div class="comment-input-area">
+        <div class="my-c-avatar">🙂</div>
+        <div class="comment-input-box">
+            <input type="text" id="commentInput" placeholder="댓글 달기..." oninput="checkCommentInput()">
+        </div>
+        <button class="comment-submit" id="commentSubmit" disabled onclick="postComment()">게시</button>
+    </div>
+</div>
+
+<!-- 스토리(야작일지) 모달 -->
+<div class="story-modal" id="storyModal" style="display:none; justify-content:center;">
+    <div class="story-content">
+        <div class="story-progress" id="storyProgress"></div>
+        <div class="story-header">
+            <div class="sh-user">
+                <div class="sh-avatar"><img src="https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%94%84%EC%82%AC.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+                baek.dojin
+            </div>
+            <span class="sh-close" onclick="closeStory()">✕</span>
+        </div>
+        <div class="story-body" id="storyBody"></div>
+        <div class="story-nav story-prev" onclick="changeStory(-1)"></div>
+        <div class="story-nav story-next" onclick="changeStory(1)"></div>
+    </div>
+</div>
+
+<script>
+    // BGM — 킹스데일리 방식 (YT IFrame API)
+    window.bgmPlayer = null;
+    window.bgmReady = false;
+    window.bgmMinimized = false;
+
+    window.loadYTApi = function() {
+        if (window.YT && window.YT.Player) { window.initBGMPlayer(); return; }
+        if (document.getElementById('yt-api-script')) return;
+        var s = document.createElement('script');
+        s.id = 'yt-api-script';
+        s.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(s);
+    };
+    window.onYouTubeIframeAPIReady = function() { window.initBGMPlayer(); };
+    window.initBGMPlayer = function() {
+        if (window.bgmPlayer) return;
+        window.bgmPlayer = new YT.Player('bgm-player', {
+            height: '160', width: '100%',
+            videoId: 'fVAuVLKLUqQ',
+            playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, fs: 0 },
+            events: { onReady: function(e) { window.bgmReady = true; e.target.playVideo(); } }
+        });
+    };
+    function openBGM() {
+        var popup = document.getElementById('bgm-popup');
+        popup.style.display = 'block';
+        document.getElementById('bgmBars').classList.remove('bgm-paused');
+        document.getElementById('bgmText').innerText = 'Playing... ♪';
+        setTimeout(function() { window.loadYTApi(); }, 50);
+    }
+    function minimizeBGM() {
+        var body = document.getElementById('bgm-body');
+        var popup = document.getElementById('bgm-popup');
+        window.bgmMinimized = !window.bgmMinimized;
+        body.style.display = window.bgmMinimized ? 'none' : 'block';
+        popup.style.width = window.bgmMinimized ? '140px' : '280px';
+    }
+    function closeBGM() {
+        document.getElementById('bgm-popup').style.display = 'none';
+        document.getElementById('bgmBars').classList.add('bgm-paused');
+        document.getElementById('bgmText').innerText = '턴테이블 플리';
+        if (window.bgmPlayer && window.bgmReady) window.bgmPlayer.pauseVideo();
+    }
+
+    // BGM 팝업 드래그
+    document.addEventListener('DOMContentLoaded', function() {
+        var popup = document.getElementById('bgm-popup');
+        var header = document.getElementById('bgm-header');
+        if (!header) return;
+        var dragging = false, ox = 0, oy = 0;
+        header.addEventListener('mousedown', function(e) {
+            dragging = true;
+            ox = e.clientX - popup.getBoundingClientRect().left;
+            oy = e.clientY - popup.getBoundingClientRect().top;
+            popup.style.right = 'auto'; popup.style.bottom = 'auto';
+            header.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!dragging) return;
+            popup.style.left = (e.clientX - ox) + 'px';
+            popup.style.top = (e.clientY - oy) + 'px';
+        });
+        document.addEventListener('mouseup', function() { dragging = false; header.style.cursor = 'grab'; });
+        header.addEventListener('touchstart', function(e) {
+            var t = e.touches[0]; dragging = true;
+            ox = t.clientX - popup.getBoundingClientRect().left;
+            oy = t.clientY - popup.getBoundingClientRect().top;
+            popup.style.right = 'auto'; popup.style.bottom = 'auto';
+        });
+        document.addEventListener('touchmove', function(e) {
+            if (!dragging) return;
+            var t = e.touches[0];
+            popup.style.left = (t.clientX - ox) + 'px';
+            popup.style.top = (t.clientY - oy) + 'px';
+        });
+        document.addEventListener('touchend', function() { dragging = false; });
+    });
+
+    // 팔로우
+    function toggleFollow() {
+        var btn = document.getElementById('followBtn');
+        if (btn.innerText === '팔로우') {
+            btn.innerText = '팔로잉'; btn.classList.remove('btn-blue');
+            btn.style.background = '#efefef'; btn.style.color = '#000';
+        } else {
+            btn.innerText = '팔로우'; btn.classList.add('btn-blue');
+            btn.style.background = ''; btn.style.color = '';
+        }
+    }
+
+    // 게시물 데이터
+    const posts = [
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EB%8F%84%EC%A7%841.jpg", likes: "312", time: "방금 전", location: "S대 미술대학 조소과",
+            caption: "<b>baek.dojin</b> 오늘 작업. 형태가 안 잡혔습니다. 내일 다시. <span style='color:#00376b'>#조소 #석고 #야작</span>",
+            comments: [
+                { u: "minkhyuk_art", t: "도진아 밥은 먹고 하는 거야??" },
+                { u: "baek.dojin", t: "나중에.", r: true },
+                { u: "sculpt_fan_01", t: "작업하는 거 진짜 멋있다... 저도 조소과 가고 싶어요" },
+                { u: "yuna_easel", t: "오늘 작업실에 있었어요? 지나쳤는데 몰랐네" }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%84%B4%ED%85%8C%EC%9D%B4%EB%B8%94.jpg", likes: "891", time: "3시간 전", location: "S대 조소과 작업실",
+            caption: "<b>baek.dojin</b> 야작 필수품. 이거 없으면 못 함. <span style='color:#00376b'>#턴테이블 #야작플리</span>",
+            comments: [
+                { u: "minkhyuk_art", t: "야 너 그거 중고나라에서 산 거잖아ㅋㅋㅋ 비싸다고 했잖아" },
+                { u: "baek.dojin", t: "필요한 거 샀습니다.", r: true },
+                { u: "record_lover_j", t: "어떤 장르 들어요?" },
+                { u: "baek.dojin", t: "그때그때 다릅니다.", r: true }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EA%B3%A0%EC%96%91%EC%9D%B4.jpg", likes: "2,104", time: "1일 전", location: "S대 미술대학 앞",
+            caption: "<b>baek.dojin</b> 과방 앞 고양이. 이름은 아직 없습니다. 먹이는 줬습니다. 이름은 안 중요합니다. <span style='color:#00376b'>#고양이 #과방냥이</span>",
+            comments: [
+                { u: "minkhyuk_art", t: "야 이름 없다면서 어제 '야 거기 있어' 하고 불렀잖아ㅋㅋㅋㅋ" },
+                { u: "baek.dojin", t: "그건 지시어입니다.", r: true },
+                { u: "cat_lover_art", t: "세상에 귀여워라... 다음에 저도 밥 줘도 되나요?" },
+                { u: "yuna_easel", t: "어 저 고양이 알아요! 맨날 조소과 앞에 있잖아요" }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EC%A1%B0%EA%B0%813.png", likes: "445", time: "3일 전", location: "S대 조소과 작업실 (새벽 3시)",
+            caption: "<b>baek.dojin</b> 오늘 끌 부러뜨렸습니다. 두 번째. 힘 조절 연습 필요한 것 같습니다. <span style='color:#00376b'>#야작 #반성</span>",
+            comments: [
+                { u: "minkhyuk_art", t: "야 새벽 3시에 올리냐고ㅋㅋㅋ 자라!!!!" },
+                { u: "sculpt_fan_01", t: "끌이 부러진다는 게... 그게 가능해요?" },
+                { u: "baek.dojin", t: "가능합니다.", r: true }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%ED%95%99%EC%8B%9D.jpg", likes: "1,203", time: "5일 전", location: "S대 학생식당",
+            caption: "<b>baek.dojin</b> 오늘 밥 먹었습니다. 아주머니가 많이 주셨습니다. 감사합니다. <span style='color:#00376b'>#학식 #일상</span>",
+            comments: [
+                { u: "soonza_cafeteria", t: "도진이 학생 오늘도 왔네~ 다음엔 더 일찍 와요! 좋은 거 챙겨줄게~" },
+                { u: "minkhyuk_art", t: "야 학식 아주머니가 너 이름 알아?? 진짜야??" },
+                { u: "baek.dojin", t: "자주 가서 그런 것 같습니다.", r: true },
+                { u: "yuna_easel", t: "저도 오늘 학식 갔는데 못 봤어요ㅠ" }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EC%A1%B0%EA%B0%811.png", likes: "678", time: "1주일 전", location: "S대 조소과 전시실",
+            caption: "<b>baek.dojin</b> 지난 학기 작업물입니다. 아직 마음에 안 듭니다. 다음엔 더 잘 할 수 있을 것 같습니다. <span style='color:#00376b'>#조소 #전시 #작업물</span>",
+            comments: [
+                { u: "prof_jeonghaesu", t: "형태는 잡혔다. 다음엔 표면." },
+                { u: "baek.dojin", t: "알겠습니다.", r: true },
+                { u: "sculpt_fan_01", t: "이게 마음에 안 들어요?? 저한테는 완벽해 보이는데..." }
+            ]
+        },
+        {
+            img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EC%A1%B0%EA%B0%812.jpg", likes: "234", time: "2주일 전",
+            caption: "<b>baek.dojin</b> 석고 50kg 왔습니다. 이번 학기는 이걸로 충분할 것 같습니다. 아마도. <span style='color:#00376b'>#석고 #재료</span>",
+            comments: [
+                { u: "minkhyuk_art", t: "야 50kg이 충분한 거야?? 저번에 3주 만에 다 썼잖아" },
+                { u: "baek.dojin", t: "이번엔 아껴 쓰겠습니다.", r: true },
+                { u: "art_supplies_seoul", t: "다음에 주문할 때 연락주세요~ 할인 드려요!" }
+            ]
+        }
+    ];
+
+    const grid = document.getElementById('feedGrid');
+    posts.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'grid-item';
+        if (p.img) {
+            div.innerHTML = `<img src="${p.img}">`;
+        } else {
+            div.textContent = p.emoji;
+        }
+        div.onclick = () => openModal(i);
+        grid.appendChild(div);
+    });
+
+    let currentPostIndex = -1;
+
+    function openModal(i) {
+        currentPostIndex = i;
+        const p = posts[i];
+        const modal = document.getElementById('postModal');
+
+        document.getElementById('actionHeart').classList.remove('liked-heart');
+        document.getElementById('actionBookmark').classList.remove('saved-mark');
+
+        const imgContainer = document.getElementById('modalImg');
+        if (p.img) {
+            imgContainer.innerHTML = `<img src="${p.img}"><svg class="pop-heart" id="popHeart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+        } else {
+            imgContainer.innerHTML = `<span style="font-size:80px">${p.emoji}</span><svg class="pop-heart" id="popHeart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+        }
+
+        document.getElementById('modalLocation').innerText = p.location || '';
+        document.getElementById('modalLikes').innerText = p.likes + '명이 좋아합니다';
+        document.getElementById('modalCaption').innerHTML = p.caption;
+        document.getElementById('modalTime').innerText = p.time;
+
+        renderComments();
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openZoom() {
+        const p = posts[currentPostIndex];
+        if (!p.img) return;
+        document.getElementById('zoomedImg').src = p.img;
+        document.getElementById('zoomOverlay').style.display = 'flex';
+    }
+    function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
+
+    function renderComments() {
+        const p = posts[currentPostIndex];
+        const commsDiv = document.getElementById('modalComments');
+        commsDiv.innerHTML = p.comments.map(c => `
+            <div class="comment-row" style="${c.r ? 'margin-left: 36px; margin-top:-8px;' : ''}">
+                <div class="c-avatar"><img src="https://ui-avatars.com/api/?name=${c.u}&background=random"></div>
+                <div class="c-content"><b>${c.u}</b> ${c.t}</div>
+            </div>
+        `).join('');
+    }
+
+    function triggerHeart() {
+        const heart = document.getElementById('popHeart');
+        const actionHeart = document.getElementById('actionHeart');
+        heart.classList.remove('animate-heart');
+        void heart.offsetWidth;
+        heart.classList.add('animate-heart');
+        actionHeart.classList.add('liked-heart');
+    }
+
+    function toggleLike() { document.getElementById('actionHeart').classList.toggle('liked-heart'); }
+    function toggleBookmark(el) { el.classList.toggle('saved-mark'); }
+
+    function checkCommentInput() {
+        const input = document.getElementById('commentInput').value;
+        const btn = document.getElementById('commentSubmit');
+        if (input.trim().length > 0) { btn.classList.add('active'); btn.disabled = false; }
+        else { btn.classList.remove('active'); btn.disabled = true; }
+    }
+
+    function postComment() {
+        const inputEl = document.getElementById('commentInput');
+        const text = inputEl.value.trim();
+        if (!text) return;
+        posts[currentPostIndex].comments.push({ u: "visitor_U", t: text });
+        renderComments();
+        inputEl.value = '';
+        checkCommentInput();
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.scrollTop = modalContent.scrollHeight;
+    }
+
+    function closeModal() { document.getElementById('postModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+    // 야작 일지 스토리
+    const stories = [
+        { date: "04.08 (수) 새벽 2:17", q: "오늘 작업 어땠어?", a: "형태가 안 잡혔다.\n내일 다시." },
+        { date: "04.07 (화) 새벽 1:44", q: "밥 먹었어?", a: "...나중에 먹을 거다." },
+        { date: "04.06 (월) 새벽 3:02", q: "끌 또 부러뜨렸다.", a: "힘 조절 연습 필요한 것 같다.\n두 번이나 부러뜨린 건 처음이다." },
+        { date: "04.05 (일) 밤 11:58", q: "오늘 과방 고양이 봤다.", a: "밥 챙겨줬다.\n이름은 아직 없다.\n딱히 필요하진 않다." },
+        { date: "04.04 (토) 새벽 12:30", q: "턴테이블 틀어놓고 작업하면", a: "집중이 잘 된다.\n이유는 모르겠다.\n그냥 된다." },
+        { date: "04.03 (금) 새벽 2:55", q: "전시 준비 중.", a: "마음에 안 드는 작업이 두 개 있다.\n다시 깎을 예정이다." }
+    ];
+
+    let sIdx = 0;
+
+    function openStory() {
+        document.getElementById('storyModal').style.display = 'flex';
+        renderStory();
+    }
+
+    function changeStory(dir) {
+        sIdx += dir;
+        if (sIdx < 0) sIdx = 0;
+        if (sIdx >= stories.length) { closeStory(); return; }
+        renderStory();
+    }
+
+    function renderStory() {
+        const s = stories[sIdx];
+        document.getElementById('storyBody').innerHTML = `
+            <div class="yajak-box">
+                <div class="yajak-top">🌙 야작 일지</div>
+                <div class="yajak-date">${s.date}</div>
+                <div class="yajak-q">${s.q}</div>
+                <div class="yajak-a">${s.a.replace(/\n/g, '<br>')}</div>
+            </div>`;
+        const progressDiv = document.getElementById('storyProgress');
+        progressDiv.innerHTML = stories.map((_, i) => `<div class="s-bar ${i <= sIdx ? 'active' : ''}"></div>`).join('');
+    }
+
+    function closeStory() {
+        document.getElementById('storyModal').style.display = 'none';
+        sIdx = 0;
+    }
+</script>
+</body>
+</html>
