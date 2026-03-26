@@ -203,8 +203,14 @@
         </div>
     </section>
 
+    <div class="action-buttons">
+        <button class="btn btn-blue" id="followBtn" onclick="toggleFollow()">팔로우</button>
+        <button class="btn" onclick="window.open('https://share.crack.wrtn.ai/iivafmj')">메세지</button>
+        <button class="btn">연락처</button>
+    </div>
+
     <!-- BGM 위젯 -->
-    <div style="background:#fafafa; border-bottom: 1px solid var(--ig-gray); padding: 7px 12px; display: flex; align-items: center; gap: 10px; margin: 0 0 0 0;">
+    <div style="background:#fafafa; border: 1px solid var(--ig-gray); border-radius: 6px; margin: 0 16px 12px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
         <div class="music-bars bgm-paused" id="bgmBars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
         <span style="font-size: 13px; font-weight: 500; flex: 1; color: #555;" id="bgmText">턴테이블 플리</span>
         <button class="bgm-play-btn" onclick="openBGM()">▶ 재생</button>
@@ -222,12 +228,6 @@
         <div class="bgm-popup-body" id="bgm-body">
             <div id="bgm-player"></div>
         </div>
-    </div>
-
-    <div class="action-buttons">
-        <button class="btn btn-blue" id="followBtn" onclick="toggleFollow()">팔로우</button>
-        <button class="btn" onclick="window.open('https://share.crack.wrtn.ai/iivafmj')">메세지</button>
-        <button class="btn">연락처</button>
     </div>
 
     <div class="highlights">
