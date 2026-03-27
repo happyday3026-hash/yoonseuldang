@@ -91,15 +91,22 @@
         .post-username { font-weight: 600; font-size: 14px; }
         .post-location { font-size: 12px; color: var(--ig-link); }
 
+        /* [수정] 모달 상세 이미지 1:1 유지 & 클릭용 커서 */
         .post-img-container { width: 100%; aspect-ratio: 1/1; position: relative; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; font-size: 64px; }
         .post-img-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
+        /* [수정] 이미지 전체보기 라이트박스 */
         .zoom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
         .zoom-overlay img { max-width: 100vw; max-height: 100vh; object-fit: contain; }
 
         .pop-heart { position: absolute; width: 100px; height: 100px; fill: white; opacity: 0; transform: scale(0); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); pointer-events: none; z-index: 5; }
         @keyframes heartPop { 0% { transform: scale(0); opacity: 0; } 15% { transform: scale(1.2); opacity: 1; } 30% { transform: scale(1); opacity: 1; } 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0; } }
         .animate-heart { animation: heartPop 1s ease-out forwards; }
+
+        /* [추가] 태그 아이콘 & 태그 */
+        .tag-icon-btn { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.6); padding: 6px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .tag-icon-btn svg { width: 14px; height: 14px; fill: white; }
+        .person-tag { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: none; top: 50%; left: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; }
 
         .post-actions { padding: 12px 14px; display: flex; align-items: center; gap: 16px; }
         .post-actions svg { width: 24px; height: 24px; cursor: pointer; fill: transparent; stroke: var(--ig-text); stroke-width: 2; transition: 0.2s; }
@@ -122,6 +129,7 @@
 
         .comment-input-area { position: fixed; bottom: 0; width: 100%; max-width: 430px; height: 60px; background: var(--ig-bg); border-top: 0.5px solid var(--ig-gray); display: flex; align-items: center; padding: 0 16px; gap: 12px; z-index: 20; }
         .my-c-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .my-c-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .comment-input-box { flex: 1; display: flex; align-items: center; }
         .comment-input-box input { width: 100%; border: none; outline: none; font-size: 14px; background: transparent; }
         .comment-submit { color: var(--ig-blue); font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: transparent; padding: 5px; opacity: 0.5; }
@@ -135,7 +143,7 @@
         .s-bar.active { background: #fff; }
         .story-header { position: absolute; top: 20px; left: 10px; right: 10px; display: flex; align-items: center; justify-content: space-between; z-index: 10; color: white; }
         .sh-user { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
-        .sh-user .sh-avatar { width: 32px; height: 32px; border-radius: 50%; background: #5c6bc0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .sh-user .sh-avatar { width: 32px; height: 32px; border-radius: 50%; background: #5c6bc0; display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: hidden; }
         .sh-close { cursor: pointer; font-size: 24px; padding: 0 5px; }
 
         .story-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: #1e1e2e; position: relative; }
@@ -150,6 +158,7 @@
 </head>
 <body>
 
+<!-- [수정] 이미지 전체보기 라이트박스 -->
 <div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
     <img id="zoomedImg" src="">
 </div>
@@ -281,7 +290,8 @@
                 <span class="post-location" id="modalLocation"></span>
             </div>
         </div>
-        <div class="post-img-container" id="modalImg" onclick="openZoom()" ondblclick="triggerHeart()"></div>
+        <!-- [수정] 클릭/더블클릭 충돌 해결 - JS에서 처리 -->
+        <div class="post-img-container" id="modalImg"></div>
         <div class="post-actions">
             <svg id="actionHeart" viewBox="0 0 24 24" onclick="toggleLike()" style="cursor:pointer"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -294,7 +304,7 @@
         <div class="comments-wrap" id="modalComments"></div>
     </div>
     <div class="comment-input-area">
-        <div class="my-c-avatar">🙂</div>
+        <div class="my-c-avatar"><img src="https://ui-avatars.com/api/?name=U&background=000&color=fff" style="width:100%;height:100%;object-fit:cover;"></div>
         <div class="comment-input-box">
             <input type="text" id="commentInput" placeholder="댓글 달기..." oninput="checkCommentInput()">
         </div>
@@ -320,7 +330,7 @@
 </div>
 
 <script>
-    // BGM — 킹스데일리 방식 (YT IFrame API)
+    // ===== BGM — YT IFrame API =====
     window.bgmPlayer = null;
     window.bgmReady = false;
     window.bgmMinimized = false;
@@ -398,7 +408,7 @@
         document.addEventListener('touchend', function() { dragging = false; });
     });
 
-    // 팔로우
+    // ===== 팔로우 =====
     function toggleFollow() {
         var btn = document.getElementById('followBtn');
         if (btn.innerText === '팔로우') {
@@ -410,7 +420,7 @@
         }
     }
 
-    // 게시물 데이터
+    // ===== 게시물 데이터 =====
     const posts = [
         {
             img: "https://raw.githubusercontent.com/happyday3026-hash/yoonseuldang/refs/heads/main/%EB%8F%84%EC%A7%841.jpg", likes: "1,847", time: "방금 전", location: "S대 미술대학 조소과",
@@ -492,21 +502,42 @@
         }
     ];
 
+    // ===== 피드 그리드 렌더링 =====
     const grid = document.getElementById('feedGrid');
     posts.forEach((p, i) => {
         const div = document.createElement('div');
         div.className = 'grid-item';
-        if (p.img) {
-            div.innerHTML = `<img src="${p.img}">`;
-        } else {
-            div.textContent = p.emoji;
-        }
+        div.innerHTML = `<img src="${p.img}">`;
         div.onclick = () => openModal(i);
         grid.appendChild(div);
     });
 
     let currentPostIndex = -1;
 
+    // ===== [수정 핵심] 클릭/더블클릭 분리 타이머 =====
+    let clickTimer = null;
+    let clickCount = 0;
+
+    function handleImgClick(e) {
+        // 태그 버튼 클릭 시 무시
+        if (e.target.closest('.tag-icon-btn') || e.target.closest('.person-tag')) return;
+
+        clickCount++;
+        if (clickCount === 1) {
+            clickTimer = setTimeout(function() {
+                // 싱글 클릭 → 확대
+                clickCount = 0;
+                openZoom();
+            }, 300);
+        } else if (clickCount === 2) {
+            // 더블 클릭 → 하트
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            triggerHeart();
+        }
+    }
+
+    // ===== 모달 열기 =====
     function openModal(i) {
         currentPostIndex = i;
         const p = posts[i];
@@ -516,14 +547,17 @@
         document.getElementById('actionBookmark').classList.remove('saved-mark');
 
         const imgContainer = document.getElementById('modalImg');
-        if (p.img) {
-            imgContainer.innerHTML = `<img src="${p.img}"><svg class="pop-heart" id="popHeart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-        } else {
-            imgContainer.innerHTML = `<span style="font-size:80px">${p.emoji}</span><svg class="pop-heart" id="popHeart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+        let imgHtml = `<img src="${p.img}"><svg class="pop-heart" id="popHeart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+        if (p.tag) {
+            imgHtml += `<div class="tag-icon-btn" onclick="event.stopPropagation(); toggleTag();"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div id="personTag" class="person-tag" onclick="event.stopPropagation()">${p.tag}</div>`;
         }
+        imgContainer.innerHTML = imgHtml;
+
+        // [수정] 이벤트 리스너 방식으로 클릭/더블클릭 분리 적용
+        imgContainer.onclick = handleImgClick;
 
         document.getElementById('modalLocation').innerText = p.location || '';
-        document.getElementById('modalLikes').innerText = p.likes + '명이 좋아합니다';
+        document.getElementById('modalLikes').innerText = 'o_o_u님 외 ' + p.likes + '명이 좋아합니다';
         document.getElementById('modalCaption').innerHTML = p.caption;
         document.getElementById('modalTime').innerText = p.time;
 
@@ -532,14 +566,18 @@
         document.body.style.overflow = 'hidden';
     }
 
+    // ===== [수정] 이미지 전체보기 =====
     function openZoom() {
         const p = posts[currentPostIndex];
-        if (!p.img) return;
+        if (!p || !p.img) return;
         document.getElementById('zoomedImg').src = p.img;
         document.getElementById('zoomOverlay').style.display = 'flex';
     }
-    function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
+    function closeZoom() {
+        document.getElementById('zoomOverlay').style.display = 'none';
+    }
 
+    // ===== 댓글 렌더링 =====
     function renderComments() {
         const p = posts[currentPostIndex];
         const commsDiv = document.getElementById('modalComments');
@@ -551,9 +589,11 @@
         `).join('');
     }
 
+    // ===== 하트 애니메이션 =====
     function triggerHeart() {
         const heart = document.getElementById('popHeart');
         const actionHeart = document.getElementById('actionHeart');
+        if (!heart) return;
         heart.classList.remove('animate-heart');
         void heart.offsetWidth;
         heart.classList.add('animate-heart');
@@ -562,7 +602,12 @@
 
     function toggleLike() { document.getElementById('actionHeart').classList.toggle('liked-heart'); }
     function toggleBookmark(el) { el.classList.toggle('saved-mark'); }
+    function toggleTag() {
+        const tag = document.getElementById('personTag');
+        if (tag) tag.style.display = tag.style.display === 'block' ? 'none' : 'block';
+    }
 
+    // ===== 댓글 입력 =====
     function checkCommentInput() {
         const input = document.getElementById('commentInput').value;
         const btn = document.getElementById('commentSubmit');
@@ -582,9 +627,15 @@
         modalContent.scrollTop = modalContent.scrollHeight;
     }
 
-    function closeModal() { document.getElementById('postModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+    function closeModal() {
+        document.getElementById('postModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // 타이머 초기화
+        clearTimeout(clickTimer);
+        clickCount = 0;
+    }
 
-    // 야작 일지 스토리
+    // ===== 야작 일지 스토리 =====
     const stories = [
         { q: "MBTI 뭐예요?", a: "모릅니다.\n끌 경도나 물어보세요.\n(민혁이가 ISTJ라고 했습니다.)" },
         { q: "좋아하는 사람 생기면 어떻게 해요?", a: "...그런 거 생각할\n시간이 없습니다." },
